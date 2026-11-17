@@ -1,0 +1,6 @@
+target
+.local
+.env
+.git
+docs
+scripts

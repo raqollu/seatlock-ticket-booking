@@ -1,0 +1,52 @@
+{
+  "recordedAt": "2026-11-17T16:07:18.388Z",
+  "baseUrl": "http://localhost:8080",
+  "runtime": "v24.15.0",
+  "platform": "darwin arm64",
+  "logicalCpus": 10,
+  "notes": "Single local app. 32 JDBC connections. Includes expected contention responses in latency/throughput. Not a production capacity or SLA claim.",
+  "scenarios": [
+    {
+      "scenario": "contention",
+      "requests": 500,
+      "peakClientInFlight": 500,
+      "statuses": {
+        "201": 1,
+        "409": 499
+      },
+      "uniqueBookingIds": 1,
+      "confirmedSeatCount": 1,
+      "unexpectedFailures": 0,
+      "elapsedMs": 389,
+      "attemptedRequestsPerSecond": 1286,
+      "latencyMs": {
+        "p50": 298.59,
+        "p95": 361.46,
+        "p99": 371.99
+      },
+      "eventId": "6be9fd72-c8c4-4ec7-82fa-84289ca18e27",
+      "bookingId": "95f70a92-a901-4432-9a3b-a5734069e56b"
+    },
+    {
+      "scenario": "same-key-retry",
+      "requests": 500,
+      "peakClientInFlight": 500,
+      "statuses": {
+        "200": 499,
+        "201": 1
+      },
+      "uniqueBookingIds": 1,
+      "confirmedSeatCount": 1,
+      "unexpectedFailures": 0,
+      "elapsedMs": 162,
+      "attemptedRequestsPerSecond": 3077,
+      "latencyMs": {
+        "p50": 109.44,
+        "p95": 148.98,
+        "p99": 149.96
+      },
+      "eventId": "6fde27bf-c75e-4cc1-9f7a-e5b47ba6efb6",
+      "bookingId": "f2e2162d-5bf8-4c3e-b92d-fb38e9f25434"
+    }
+  ]
+}

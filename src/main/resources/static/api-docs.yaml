@@ -1,0 +1,327 @@
+openapi: 3.0.3
+info:
+  title: Seatlock Ticket Booking API
+  version: 1.0.0
+  description: >-
+    JWT-protected booking engine. Prices are integer INR paise. Timestamps are UTC instants.
+    Checkout is simulated; no money is collected. Lists are capped at 100 entries.
+servers:
+  - url: http://localhost:8080
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/register:
+    post:
+      operationId: register
+      summary: Register a USER account and issue a one-hour token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [email, password, displayName]
+              properties:
+                email: {type: string, format: email, maxLength: 254}
+                password: {type: string, minLength: 10, maxLength: 72, description: At most 72 UTF-8 bytes}
+                displayName: {type: string, minLength: 1, maxLength: 80}
+      responses:
+        '201': {$ref: '#/components/responses/Auth'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /api/auth/login:
+    post:
+      operationId: login
+      summary: Authenticate and issue a one-hour token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [email, password]
+              properties:
+                email: {type: string, format: email, maxLength: 254}
+                password: {type: string, minLength: 1, maxLength: 72}
+      responses:
+        '200': {$ref: '#/components/responses/Auth'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+  /api/auth/me:
+    get:
+      operationId: profile
+      summary: Get the authenticated user's profile
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/User'}
+        '401': {$ref: '#/components/responses/Problem'}
+  /api/events:
+    get:
+      operationId: listEvents
+      summary: List up to 100 events by start time
+      security: []
+      responses:
+        '200':
+          description: Events with effective availability counts
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/Event'}}
+    post:
+      operationId: createEvent
+      summary: Create an event and seat inventory (ADMIN only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [title, venue, city, startsAt, pricePaise, rows, columns]
+              properties:
+                title: {type: string, minLength: 1, maxLength: 120}
+                venue: {type: string, minLength: 1, maxLength: 120}
+                city: {type: string, minLength: 1, maxLength: 80}
+                startsAt: {type: string, format: date-time, description: Must be in the future}
+                pricePaise: {type: integer, minimum: 1, maximum: 100000000, example: 149900}
+                rows: {type: integer, minimum: 1, maximum: 26}
+                columns: {type: integer, minimum: 1, maximum: 30}
+      responses:
+        '201':
+          description: Event created with AVAILABLE inventory
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Event'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+  /api/events/{id}:
+    parameters:
+      - {$ref: '#/components/parameters/Id'}
+    get:
+      operationId: getEvent
+      summary: Get one event and its effective availability count
+      security: []
+      responses:
+        '200':
+          description: Event
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Event'}
+        '404': {$ref: '#/components/responses/Problem'}
+  /api/events/{id}/seats:
+    parameters:
+      - {$ref: '#/components/parameters/Id'}
+    get:
+      operationId: listSeats
+      summary: List inventory; expired held seats appear AVAILABLE
+      security: []
+      responses:
+        '200':
+          description: Seats sorted by row and numeric column
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code: {type: string, example: A1}
+                    row: {type: string, example: A}
+                    column: {type: integer, example: 1}
+                    status: {type: string, enum: [AVAILABLE, HELD, BOOKED]}
+        '404': {$ref: '#/components/responses/Problem'}
+  /api/bookings/holds:
+    post:
+      operationId: holdSeats
+      summary: Atomically hold 1-8 seats for up to 15 minutes
+      description: >-
+        TTL is capped at event start. A successful key is reserved per user with a fingerprint
+        of event and sorted seat selection. A replay returns the original booking ID and CURRENT
+        lifecycle state, not an identical serialized response. A failed transaction rolls back
+        its key claim. New intents must use new keys after successful creation.
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: {type: string, minLength: 1, maxLength: 128, pattern: '^[A-Za-z0-9._:-]+$'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [eventId, seats]
+              properties:
+                eventId: {type: string, format: uuid}
+                seats:
+                  type: array
+                  minItems: 1
+                  maxItems: 8
+                  uniqueItems: true
+                  items: {type: string, pattern: '^[A-Z]([1-9]|[12][0-9]|30)$'}
+                  example: [A1, A2]
+      responses:
+        '201': {$ref: '#/components/responses/Hold'}
+        '200': {$ref: '#/components/responses/Hold'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409':
+          description: SEAT_UNAVAILABLE, IDEMPOTENCY_MISMATCH, or EVENT_STARTED
+          content:
+            application/problem+json:
+              schema: {$ref: '#/components/schemas/Problem'}
+        '503':
+          description: Transient database contention; retry the same key with backoff
+          headers:
+            Retry-After: {schema: {type: integer}, description: Delay in seconds}
+          content:
+            application/problem+json:
+              schema: {$ref: '#/components/schemas/Problem'}
+  /api/bookings:
+    get:
+      operationId: listBookings
+      summary: List the authenticated user's latest 100 bookings
+      responses:
+        '200':
+          description: Bookings sorted by creation time descending
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/Booking'}}
+        '401': {$ref: '#/components/responses/Problem'}
+  /api/bookings/{id}:
+    parameters:
+      - {$ref: '#/components/parameters/Id'}
+    get:
+      operationId: getBooking
+      summary: Get an owned booking; another owner's ID also returns 404
+      responses:
+        '200': {$ref: '#/components/responses/Booking'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+  /api/bookings/{id}/confirm:
+    parameters:
+      - {$ref: '#/components/parameters/Id'}
+    post:
+      operationId: confirmBooking
+      summary: Confirm an owned live hold; repeated confirmation returns current state
+      description: Demo checkout only. No payment is initiated or verified.
+      responses:
+        '200': {$ref: '#/components/responses/Booking'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '410': {$ref: '#/components/responses/Problem'}
+        '503': {$ref: '#/components/responses/Problem'}
+  /api/bookings/{id}/cancel:
+    parameters:
+      - {$ref: '#/components/parameters/Id'}
+    post:
+      operationId: cancelBooking
+      summary: Cancel an owned live hold or confirmation and release its seats
+      description: Repeated cancellation returns CANCELLED. Expired holds return 410. No refund is needed because no payment is collected.
+      responses:
+        '200': {$ref: '#/components/responses/Booking'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '410': {$ref: '#/components/responses/Problem'}
+        '503': {$ref: '#/components/responses/Problem'}
+  /actuator/health:
+    get:
+      operationId: health
+      summary: Public health status without component details
+      security: []
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema: {type: object, properties: {status: {type: string, example: UP}}}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  parameters:
+    Id: {in: path, name: id, required: true, schema: {type: string, format: uuid}}
+  responses:
+    Auth:
+      description: Authentication succeeded
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              accessToken: {type: string}
+              tokenType: {type: string, example: Bearer}
+              expiresIn: {type: integer, example: 3600}
+              user: {$ref: '#/components/schemas/User'}
+    Booking:
+      description: Current booking state
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Booking'}
+    Hold:
+      description: Hold created (201) or successful key replayed (200)
+      headers:
+        Location: {schema: {type: string}, description: URI of the booking}
+        Idempotency-Replayed: {schema: {type: string, enum: ['true', 'false']}}
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Booking'}
+    Problem:
+      description: Rejected request. Inspect status, code and detail.
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}
+  schemas:
+    User:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        email: {type: string, format: email}
+        displayName: {type: string}
+        role: {type: string, enum: [USER, ADMIN]}
+    Event:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        title: {type: string}
+        venue: {type: string}
+        city: {type: string}
+        startsAt: {type: string, format: date-time}
+        pricePaise: {type: integer, example: 149900}
+        rows: {type: integer}
+        columns: {type: integer}
+        availableSeats: {type: integer}
+        totalSeats: {type: integer}
+    Booking:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        eventId: {type: string, format: uuid}
+        eventTitle: {type: string}
+        venue: {type: string}
+        city: {type: string}
+        startsAt: {type: string, format: date-time}
+        seats: {type: array, items: {type: string}}
+        status: {type: string, enum: [HELD, CONFIRMED, CANCELLED, EXPIRED]}
+        totalPaise: {type: integer}
+        createdAt: {type: string, format: date-time}
+        expiresAt: {type: string, format: date-time}
+        confirmedAt: {type: string, format: date-time, nullable: true}
+    Problem:
+      type: object
+      properties:
+        type: {type: string}
+        title: {type: string}
+        status: {type: integer}
+        code: {type: string, example: SEAT_UNAVAILABLE}
+        detail: {type: string}
+        instance: {type: string}

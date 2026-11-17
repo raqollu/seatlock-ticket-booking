@@ -1,0 +1,65 @@
+{
+  "recordedAt": "2026-11-17T16:23:02.707Z",
+  "tests": {
+    "tests": 24,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "coverage": {
+    "INSTRUCTION": {
+      "missed": 65,
+      "covered": 2106,
+      "percent": 97.01
+    },
+    "LINE": {
+      "missed": 8,
+      "covered": 248,
+      "percent": 96.88
+    },
+    "COMPLEXITY": {
+      "missed": 10,
+      "covered": 146,
+      "percent": 93.59
+    },
+    "METHOD": {
+      "missed": 4,
+      "covered": 106,
+      "percent": 96.36
+    },
+    "BRANCH": {
+      "missed": 6,
+      "covered": 86,
+      "percent": 93.48
+    },
+    "CLASS": {
+      "missed": 0,
+      "covered": 25,
+      "percent": 100
+    }
+  },
+  "coverageScope": "All production Java classes; no class exclusions. JavaScript not instrumented.",
+  "reproduction": "./scripts/test.sh && node scripts/record-evidence.mjs",
+  "sourceSha256": {
+    "src/main/java/dev/seatlock/TicketApplication.java": "054ac152be8b11b3b3b607394117abbeb58b3b15aa8d7a0831f52ad3ccdae77e",
+    "src/main/java/dev/seatlock/api/ApiException.java": "82cc5e55c50d0e34d3ac4e5381bc402bf0a8c683efac6e7b7fc206c3137e29e5",
+    "src/main/java/dev/seatlock/api/AuthController.java": "6bf6b40f4872ad7bafd0f5bbbbbf13a61c0de73640e9e9e557b3940661397526",
+    "src/main/java/dev/seatlock/api/BookingController.java": "3d2ed450add3c302b68b00b954ddfab102c9af27ab3f13816ca79960db248f14",
+    "src/main/java/dev/seatlock/api/Errors.java": "66b73542a437d7b16c6d877b51bace67598d3b8308357e141d619fe70b4592b1",
+    "src/main/java/dev/seatlock/api/EventController.java": "d1ecc1a89112c8c96b7cae6ca10fb90c0336276c604b463e427b1697e31e02b6",
+    "src/main/java/dev/seatlock/api/Models.java": "2235d3dad03c64ed122e1850f9dab1b10d88a4c10d545836f24e524a10f8508e",
+    "src/main/java/dev/seatlock/booking/BookingService.java": "6eda9a3f7039c9051783cb168f55e74e7a968d485e590adf105b35bc157255fd",
+    "src/main/java/dev/seatlock/booking/ExpiryScheduler.java": "301f328142dca88a0cda7c37a7210997a39395dbef77add8ea0209a848483b72",
+    "src/main/java/dev/seatlock/catalog/CatalogService.java": "94d321dd40bb5b41e55d5e11aff2059af255f85fb254fd7d77f0c50ec0c70158",
+    "src/main/java/dev/seatlock/config/DemoData.java": "86ccb64ae5a497f72cc75843356ea1be6b217aaa786dc135b4a71ebdcbf66ab9",
+    "src/main/java/dev/seatlock/security/AuthService.java": "c141e32b83eddf827a759d7cc100bf2cc58b13046774f1c2cc3b2c9fd31cf142",
+    "src/main/java/dev/seatlock/security/SecurityConfig.java": "8cf4b189cd882e829011102d2eded9f5609d1bd77818ff73adad1cfb78276706",
+    "src/main/resources/application.yml": "fcd73bc7edde36d2452921c46c21c014faf6b5892fdf5f9a2bf497a82462c85a",
+    "src/main/resources/db/migration/V1__booking_schema.sql": "659f10fcf946b032c116590f9ab75a3fcb15d0135f07a12505b88912a127923a",
+    "src/main/resources/static/api-docs.yaml": "3ef528b1edb6d503954353b756b27f4cfc05d397713c068adc639162bf616ad9",
+    "src/main/resources/static/app.js": "2326ecb16a3148e48a7d325f0ca407a5667e09e568ad58dbaa26f6586556948e",
+    "src/main/resources/static/favicon.svg": "58cfb8802ce3f0ee55a9f7b461b05b6cf2bff36db12a9f4d08c0c429e3c3f46f",
+    "src/main/resources/static/index.html": "214e84ae4cdf2376a202043a138562b7c6424f86f5165c4c0b9a1b852f43708c",
+    "src/main/resources/static/styles.css": "a52784da93b7de504dec4b34262ad757448e15a9d20e515f83b8a44a57d36259"
+  }
+}

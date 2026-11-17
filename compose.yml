@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: tickets
+      POSTGRES_USER: tickets
+      POSTGRES_PASSWORD: ${TICKET_DB_PASSWORD:?Set TICKET_DB_PASSWORD in .env}
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: ["ticket-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tickets -d tickets"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  app:
+    build: .
+    environment:
+      TICKET_DB_URL: jdbc:postgresql://db:5432/tickets
+      TICKET_DB_PASSWORD: ${TICKET_DB_PASSWORD}
+      TICKET_JWT_SECRET: ${TICKET_JWT_SECRET:?Set TICKET_JWT_SECRET in .env}
+      TICKET_DEMO_ENABLED: "true"
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      db: {condition: service_healthy}
+volumes:
+  ticket-data:

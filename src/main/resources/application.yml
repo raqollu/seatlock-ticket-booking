@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: seatlock
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${TICKET_DB_URL:jdbc:postgresql://localhost:5432/tickets}
+    username: ${TICKET_DB_USER:tickets}
+    password: ${TICKET_DB_PASSWORD:tickets}
+    hikari:
+      maximum-pool-size: 32
+      connection-timeout: 30000
+      connection-init-sql: "SET lock_timeout = '10s'; SET statement_timeout = '15s'"
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  transaction:
+    default-timeout: 20s
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+ticket:
+  jwt-secret: ${TICKET_JWT_SECRET}
+  demo-enabled: ${TICKET_DEMO_ENABLED:false}
+  expiry-enabled: ${TICKET_EXPIRY_ENABLED:true}
+  expiry-delay-ms: 10000

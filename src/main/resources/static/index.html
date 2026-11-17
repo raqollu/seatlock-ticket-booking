@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#17251e"><meta name="description" content="Find your next great night. A working ticket booking demo with live seat availability.">
+  <title>Seatlock — A good night starts here</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="header"><div class="header-inner">
+    <a class="brand" href="/" aria-label="Seatlock home"><span class="brand-icon">s</span>seatlock<span class="brand-dot">.</span></a>
+    <nav aria-label="Main navigation"><a class="nav-active" href="#discover">Discover</a><button id="bookings-nav">My bookings</button><button id="how-nav">How it works <span>↗</span></button></nav>
+    <button class="account-btn" id="account-btn"><span class="user-icon">◎</span><span id="account-label">Sign in</span></button>
+  </div></header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> LESS SCROLLING. MORE LIVING.</div>
+        <h1 id="hero-title">Good nights.<br>Great <em>seats.</em></h1>
+        <p>The lights go down. The crowd comes alive.<br>Find your place in the moments that matter.</p>
+        <a href="#discover" class="hero-link">Find your next experience <span>↓</span></a>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-orbit orbit-three"></div>
+        <span class="art-label">MAKE ROOM FOR<br>SOMETHING GOOD.</span><span class="art-star">✳</span><span class="art-caption">LIVE A LITTLE. BE THERE.</span>
+        <div class="art-ticket"><span>ADMIT ONE</span><strong>Your next<br>“I was there.”</strong><div class="ticket-dashes"></div><span class="ticket-bottom">SEATLOCK ORIGINAL EXPERIENCES ↗</span></div>
+      </div>
+    </section>
+
+    <section id="discover" class="discover" aria-labelledby="discover-title">
+      <div class="section-heading"><div><div class="eyebrow muted">YOUR NEXT PLAN, SORTED</div><h2 id="discover-title">Pick your kind of night<span>.</span></h2></div><span class="small-note"><span class="live-dot"></span> Live seat availability</span></div>
+      <div id="events" class="events"><p class="loading">Finding good nights…</p></div>
+    </section>
+
+    <section id="booking-area" class="booking-area" hidden aria-label="Choose your seats">
+      <div class="seat-panel"><div class="seat-heading"><div><div class="eyebrow muted">MAKE IT YOURS</div><h2>Where will you be?</h2></div><button id="refresh-seats" class="text-btn" aria-label="Refresh seat availability">↻ Refresh</button></div>
+        <div class="seat-legend"><span><i class="legend-seat available"></i>Available</span><span><i class="legend-seat selected"></i>Selected</span><span><i class="legend-seat held"></i>On hold</span><span><i class="legend-seat booked"></i>Booked</span></div>
+        <div class="stage"><div></div><span>THE STAGE</span></div>
+        <div class="seat-scroll"><div id="seat-map" class="seat-map" role="group" aria-label="Seat selection"></div></div>
+        <div class="seat-footnote"><span>Every seat has a story. Pick up to 8.</span><span id="availability-note">Updating…</span></div>
+      </div>
+      <aside class="summary" aria-labelledby="summary-title"><div class="summary-top"><span class="eyebrow muted">YOUR NIGHT OUT</span><span class="mini-ticket">↗</span></div>
+        <h2 id="summary-title">Choose an experience</h2><p id="summary-meta" class="summary-meta"></p>
+        <div class="summary-divider"></div><div id="summary-content"></div>
+        <div class="summary-divider"></div><div class="total-line"><span>Total <small>INR · all inclusive</small></span><strong id="summary-total">₹0</strong></div>
+        <button id="hold-btn" class="primary" disabled>Select your seats</button>
+        <button id="cancel-btn" class="secondary" hidden>Release seats</button>
+        <p id="summary-help" class="summary-help">Your seats are held for up to 15 minutes.<br>Take a breath. Make it a plan.</p>
+        <div class="demo-note"><span>◈</span> Demo checkout. No money is collected.</div>
+      </aside>
+    </section>
+    <div class="bottom-strip"><span class="brand small-brand">seatlock.</span><p>For the moments you can’t stream.</p><span>MADE TO BE THERE ↗</span></div>
+  </main>
+  <footer><span>A working project by Rahul Kolluru</span><span>Spring Boot · PostgreSQL · Java 21</span></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <dialog id="auth-dialog"><div class="dialog-heading"><span class="eyebrow muted">A GOOD NIGHT STARTS HERE</span><button class="close-btn" data-close="auth-dialog" aria-label="Close sign in">×</button></div>
+    <h2 id="auth-title">Welcome back.</h2><p class="dialog-subtitle" id="auth-subtitle">Sign in to save your place in the crowd.</p>
+    <form id="auth-form"><label id="name-field" hidden>Your name<input name="displayName" maxlength="80" autocomplete="name"></label>
+      <label>Email<input name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.com"></label>
+      <label>Password<input name="password" type="password" required maxlength="72" autocomplete="current-password" placeholder="At least 10 characters"></label>
+      <p id="auth-error" class="form-error" role="alert"></p><button class="primary" id="auth-submit" type="submit">Sign in</button>
+    </form><button id="demo-login" class="secondary">Try the demo account ↗</button><button id="auth-toggle" class="text-btn auth-toggle">New here? Create an account</button>
+  </dialog>
+  <dialog id="bookings-dialog" class="wide-dialog"><div class="dialog-heading"><span class="eyebrow muted">ALL YOUR GOOD NIGHTS</span><button class="close-btn" data-close="bookings-dialog" aria-label="Close bookings">×</button></div><h2>My bookings.</h2><div id="bookings-list"></div></dialog>
+  <dialog id="how-dialog"><div class="dialog-heading"><span class="eyebrow muted">FROM MAYBE TO “SEE YOU THERE”</span><button class="close-btn" data-close="how-dialog" aria-label="Close how it works">×</button></div><h2>A seat. A plan. A night.</h2>
+    <ol class="how-list"><li><strong>Find your experience.</strong><p>Choose a show and check live seat availability.</p></li><li><strong>Make a little room.</strong><p>Select up to 8 seats. Holding them reserves your selection for up to 15 minutes, or until the show starts.</p></li><li><strong>You’re on the list.</strong><p>Confirm your booking before the timer runs out. This is a demo; there is no payment step.</p></li></ol><p class="dialog-subtitle">Changed your mind? Release your seats from My bookings. If a hold expires, the seats become available again automatically.</p>
+  </dialog>
+</body></html>
